@@ -349,9 +349,9 @@ then it will not pass the test functions the markers will use.
 '''
         )
 
-    print('"test_appear_as_subpart" has been passed ', test_appear_as_subpart() )
+#    print('"test_appear_as_subpart" has been passed ', test_appear_as_subpart() )
     
-#    print('\n"test_solve_1" has been passed ', test_solve_1() )
+    print('\n"test_solve_1" has been passed ', test_solve_1() )
 
 #    print('\n"test_solve_2" has been passed ', test_solve_2() )
 

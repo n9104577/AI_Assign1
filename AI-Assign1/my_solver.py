@@ -14,12 +14,11 @@ import numpy as np
 
 import itertools
 
-import generic_search
+import generic_search as gs
 
-from assignment_one import (TetrisPart, AssemblyProblem, offset_range, 
-#                            display_state, 
+from assignment_one import (TetrisPart, AssemblyProblem, offset_range, display_state, 
                             make_state_canonical, play_solution, 
-#                            load_state, make_random_state
+                            load_state, make_random_state
                             )
 
 # ---------------------------------------------------------------------------
@@ -72,14 +71,14 @@ def appear_as_subpart(some_part, goal_part):
     if some_size[0] <= goal_size[0] and some_size[1] <= goal_size[1]:
         for i in range(0, goal_size[0]):            
             for j in range(0, goal_size[1]-1):    
-                if(some_array[0][0] == goal_array[i][j] and some_array[0][1] == goal_array[i][j+1]):
+                if((some_size[1] == 1 and some_array[0][0] == goal_array[i][j]) or some_array[0][0] == goal_array[i][j] and some_array[0][1] == goal_array[i][j+1]):
                     temp = goal_array[i:i+some_size[0], j:j+some_size[1]]     
                     temp = np.array(temp)                   
                     if temp.size == some_array.size:
                         rows,cols = np.where(some_array == 0)                                           
                         for k in range(0,len(rows)):                            
                             temp.itemset((rows[k],cols[k]), 0)
-                            if np.array_equal(some_array, temp):
+                            if np.array_equal(some_array, temp):                             
                                 return True                                           
     return False
                 
@@ -111,7 +110,7 @@ def cost_rotated_subpart(some_part, goal_part):
     numRotation = 0
     for i in range(0,4):
         if(cost_rotated_subpart(some_part, goal_part)):
-            return True
+            return numRotation
         else:
             some_part.rotate90()
             numRotation = numRotation + 1
@@ -161,11 +160,29 @@ class AssemblyProblem_1(AssemblyProblem):
         
         """
         #
-
-        raise NotImplementedError
-
-        # part_list = list(state)  #    HINT
+        actions = []
         
+        part_list = list(state)
+        
+        
+        options = list(itertools.permutations(part_list))
+        #print("options")
+        #print(np.array(options))
+        
+        for opt in options:
+            if(len(opt) <= 1):
+                return actions
+            
+            pa = opt[0]
+            pu = opt[1]
+            range1 = offset_range(pa,pu)
+            for offset in range(range1[0], range1[1]):
+                actions.append((pa, pu, offset))       
+
+        #print("actions")
+        #print(np.array(actions))
+        #print()
+        return list(actions)
 
 
     def result(self, state, action):
@@ -181,10 +198,20 @@ class AssemblyProblem_1(AssemblyProblem):
         """
         # Here a workbench state is a frozenset of parts        
  
-        raise NotImplementedError
-
+        part_list = list(state)
+        
         # pa, pu, offset = action # HINT
-
+        pa, pu, offset = action
+        
+        part_list.remove(pa)
+        part_list.remove(pu)        
+        tetrisPart = TetrisPart(pa, pu, offset).get_frozen()
+        part_list.append(tuple(tetrisPart))
+        state = make_state_canonical(part_list)
+        #display_state(state)
+        
+        return state
+       
 
 # ---------------------------------------------------------------------------
 
@@ -368,10 +395,17 @@ def solve_1(initial, goal):
     '''
 
     print('\n++  busy searching in solve_1() ...  ++\n')
-    raise NotImplementedError
     
-    # assembly_problem = AssemblyProblem_1(initial, goal) # HINT
-    
+    assembly_problem = AssemblyProblem_1(initial, goal) # HINT
+    sol = gs.depth_first_graph_search(assembly_problem)
+  
+    if(sol == None):
+        print("no solution")
+        return "no solution"
+    else:
+        
+        print(sol.solution()) 
+        return sol.solution()
 
 # ---------------------------------------------------------------------------
         
