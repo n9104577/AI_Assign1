@@ -60,26 +60,47 @@ def appear_as_subpart(some_part, goal_part):
         False otherwise    
     '''
     
+    # turn the parts into numpy arrays
     some_array = np.array(some_part)
     goal_array = np.array(goal_part)
-    
-    #Height [0] by width [1]
+   
+    # get the shape/size of the arrays
+    #Height [0] by width [1]    
     some_size = some_array.shape
     goal_size = goal_array.shape
     
-    
-    if some_size[0] <= goal_size[0] and some_size[1] <= goal_size[1]:
-        for i in range(0, goal_size[0]):            
-            for j in range(0, goal_size[1]-1):    
-                if((some_size[1] == 1 and some_array[0][0] == goal_array[i][j]) or some_array[0][0] == goal_array[i][j] and some_array[0][1] == goal_array[i][j+1]):
-                    temp = goal_array[i:i+some_size[0], j:j+some_size[1]]     
-                    temp = np.array(temp)                   
-                    if temp.size == some_array.size:
-                        rows,cols = np.where(some_array == 0)                                           
-                        for k in range(0,len(rows)):                            
-                            temp.itemset((rows[k],cols[k]), 0)
-                            if np.array_equal(some_array, temp):                             
-                                return True                                           
+    # make sure the goal array is valid
+    if(len(goal_size) > 1):
+        
+        # check to see if the part is smaller than the goal else 
+        # there is no point checking
+        if some_size[0] <= goal_size[0] and some_size[1] <= goal_size[1]:        
+            
+            # iterate through the goal part array
+            for i in range(0, goal_size[0]):            
+                for j in range(0, goal_size[1]-1):    
+                    
+                    # check if the first one or two values of the part array match the goal array
+                    if((some_size[1] == 1 and some_array[0][0] == goal_array[i][j]) or some_array[0][0] == goal_array[i][j] and some_array[0][1] == goal_array[i][j+1]):
+                        
+                        # if it does pull a slice of the goal array
+                        temp = goal_array[i:i+some_size[0], j:j+some_size[1]]     
+                        temp = np.array(temp)  
+                        
+                        # just make sure theyre the same size
+                        if temp.size == some_array.size:
+                            
+                            # pull the zeros from the part array
+                            rows,cols = np.where(some_array == 0)   
+
+                            # Then for each location in part array where there is a zero
+                            # replace the corresponding value in the temp array with a zero                                        
+                            for k in range(0,len(rows)):                            
+                                temp.itemset((rows[k],cols[k]), 0)
+                                
+                                # check the two arrays are equal if so return true else repeat 
+                                if np.array_equal(some_array, temp):       
+                                    return True                                           
     return False
                 
                     
@@ -107,9 +128,16 @@ def cost_rotated_subpart(some_part, goal_part):
         np.inf  if no rotated version of 'some_part' appear in 'goal_part'
     
     '''
+    # variable to count number of rotations
     numRotation = 0
+    
+    # only 3 rotations for a full 
     for i in range(0,4):
-        if(cost_rotated_subpart(some_part, goal_part)):
+        
+        # check if some_part appears in goal_part
+        if(appear_as_subpart(some_part, goal_part)):
+            
+            # if yes return roations else rotate the part 90 degrees and check again
             return numRotation
         else:
             some_part.rotate90()
@@ -160,22 +188,24 @@ class AssemblyProblem_1(AssemblyProblem):
         
         """
         #
-        actions = []
-        
+        actions = []        
         part_list = list(state)
         
-        
+        # get the number of different combinations
         options = list(itertools.permutations(part_list))
-        #print("options")
-        #print(np.array(options))
         
+        # for each combination get the part above and part under
         for opt in options:
             if(len(opt) <= 1):
                 return actions
             
             pa = opt[0]
             pu = opt[1]
+            
+            # get the offset range for that combo
             range1 = offset_range(pa,pu)
+            
+            # then get every append every range to that combo 
             for offset in range(range1[0], range1[1]):
                 actions.append((pa, pu, offset))       
 
@@ -201,11 +231,18 @@ class AssemblyProblem_1(AssemblyProblem):
         part_list = list(state)
         
         # pa, pu, offset = action # HINT
+        # get each variable from action
         pa, pu, offset = action
         
+        # remove pa and pu from the part list(state) to free it up
         part_list.remove(pa)
         part_list.remove(pu)        
+        
+        # create a new tetris part out of the variables from actions
+        # turn it to a tuple of tuples using .get_frozen()
         tetrisPart = TetrisPart(pa, pu, offset).get_frozen()
+        
+        # append it back to the part_list and return it as a canonical state
         part_list.append(tuple(tetrisPart))
         state = make_state_canonical(part_list)
         #display_state(state)
@@ -255,7 +292,50 @@ class AssemblyProblem_2(AssemblyProblem_1):
         """
         #
 
-        raise NotImplementedError
+        actions = []
+        part_list = list(state)
+        
+        # make sure the goal state is the right format for appear_as_subpart
+        goal = self.goal
+        goal_array = np.array(goal)
+        
+        # reshape it 
+        goal_size = goal_array.shape
+        
+        #check the size is valid if it is make sure its not to big
+        # and assign it to be the goal_array
+        if(len(goal_size) > 1):
+            new_goal = np.reshape(goal_array,[goal_size[1],goal_size[2]])
+            new_goal_size = new_goal.shape
+            goal_size = new_goal_size
+            goal_array = np.array(new_goal)
+        
+        
+        
+   
+        # get every combo
+        options = list(itertools.permutations(part_list))
+        for opt in options:
+            if(len(opt) <= 1):
+                return actions
+            
+            pa = opt[0]
+            pu = opt[1]
+            
+            # get the range of offset for the two parts
+            range1 = offset_range(pa,pu)
+            for offset in range(range1[0], range1[1]):
+                
+                # create a tetris part and check it appears in the goal_array
+                # if it does append it to the actions list else skip it
+                tetrisPart = TetrisPart(pa, pu, offset).get_frozen()
+                if(appear_as_subpart(tetrisPart, goal_array)):
+                    actions.append((pa, pu, offset))       
+
+#        print("actions")
+#        print(np.array(actions))
+#        print()
+        return list(actions)
 
 
 # ---------------------------------------------------------------------------
@@ -297,8 +377,37 @@ class AssemblyProblem_3(AssemblyProblem_1):
         
         """
         #
+#
+        actions = []
+        
+        part_list = list(state)
+        
+        
+        options = list(itertools.permutations(part_list))
+        #print("options")
+        #print(np.array(options))
+        
+        for opt in options:
+            if(len(opt) <= 1):
+                return actions
+            
+            pa = opt[0]
+            pu = opt[1]
+            range1 = offset_range(pa,pu)
+            for offset in range(range1[0], range1[1]):
+                for rotation in range(5):
+                    da = TetrisPart(pa)
+                    da.rotate90()
+                    da.display
+                    
+                    actions.append((pa, pu, offset))       
 
-        raise NotImplementedError
+        #print("actions")
+        #print(np.array(actions))
+        #print()
+        return list(actions)
+
+        
 
         
     def result(self, state, action):
@@ -311,7 +420,23 @@ class AssemblyProblem_3(AssemblyProblem_1):
         """
         # Here a workbench state is a frozenset of parts        
  
-        raise NotImplementedError
+        part_list = list(state)
+        
+        # pa, pu, offset = action # HINT
+        pa, pu, offset = action
+        
+        part_list.remove(pa)
+        part_list.remove(pu)        
+       
+        tetrisPart = TetrisPart(pa, pu, offset).get_frozen()
+
+        part_list.append(tuple(tetrisPart))
+        state = make_state_canonical(part_list)
+#        print("state")
+#        display_state(state)
+#        print()
+        
+        return state
 
 
 # ---------------------------------------------------------------------------
@@ -425,7 +550,16 @@ def solve_2(initial, goal):
     '''
 
     print('\n++  busy searching in solve_2() ...  ++\n')
-    raise NotImplementedError
+    assembly_problem = AssemblyProblem_2(initial, goal) # HINT
+    sol = gs.depth_first_graph_search(assembly_problem)
+  
+    if(sol == None):
+        print("no solution")
+        return "no solution"
+    else:
+        
+        print(sol.solution()) 
+        return sol.solution()
     
 
 # ---------------------------------------------------------------------------
@@ -446,7 +580,16 @@ def solve_3(initial, goal):
     '''
 
     print('\n++  busy searching in solve_3() ...  ++\n')
-    raise NotImplementedError
+    assembly_problem = AssemblyProblem_3(initial, goal) # HINT
+    sol = gs.depth_first_graph_search(assembly_problem)
+  
+    if(sol == None):
+        print("no solution")
+        return "no solution"
+    else:
+        
+        print(sol.solution()) 
+        return sol.solution()
     
 # ---------------------------------------------------------------------------
         
@@ -467,8 +610,16 @@ def solve_4(initial, goal):
 
     #         raise NotImplementedError
     print('\n++  busy searching in solve_4() ...  ++\n')
-    raise NotImplementedError
+    assembly_problem = AssemblyProblem_4(initial, goal) # HINT
+    sol = gs.depth_first_graph_search(assembly_problem)
+  
+    if(sol == None):
+        print("no solution")
+        return "no solution"
+    else:
         
+        print(sol.solution()) 
+        return sol.solution()
 # ---------------------------------------------------------------------------
 
 
