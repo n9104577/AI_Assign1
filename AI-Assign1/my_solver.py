@@ -570,7 +570,7 @@ class AssemblyProblem_4(AssemblyProblem_3):
 
         
 
-        print(np.array(actions))
+#        print(np.array(actions))
 #        print()
         return list(actions)
         
@@ -595,7 +595,19 @@ class AssemblyProblem_4(AssemblyProblem_3):
         '''
         k_n = 0
         k_g = 0
-        return k_n-k_g + 1
+        maxRot = 0
+       
+        for part in self.goal:
+            k_g += 1
+        for part in n.state:            
+            maxRot += cost_rotated_subpart(part,self.goal[0])
+            k_n += 1
+            
+            
+        for part in self.goal:
+            k_g += 1
+       
+        return k_n - k_g + maxRot
         
 
 # ---------------------------------------------------------------------------
@@ -624,6 +636,7 @@ def solve_1(initial, goal):
         print("no solution")
         return "no solution"
     else:
+       
         print("solutino")
         print(sol.solution()) 
         return sol.solution()
@@ -653,7 +666,7 @@ def solve_2(initial, goal):
         print("no solution")
         return "no solution"
     else:
-        
+        print("solution")
         print(sol.solution()) 
         return sol.solution()
     
@@ -674,16 +687,17 @@ def solve_3(initial, goal):
         'initial' to state 'goal'
     
     '''
-
+    part_list = []
     print('\n++  busy searching in solve_3() ...  ++\n')
     assembly_problem = AssemblyProblem_3(initial, goal) # HINT
     
     sol = gs.depth_first_graph_search(assembly_problem)
-  
+    
     if(sol == None):
         print("no solution")
         return "no solution"
     else:
+       
         print("solution")
         print(sol.solution()) 
         return sol.solution()
@@ -708,8 +722,8 @@ def solve_4(initial, goal):
     #         raise NotImplementedError
     print('\n++  busy searching in solve_4() ...  ++\n')
     assembly_problem = AssemblyProblem_4(initial, goal) # HINT
-    sol = gs.astar_graph_search(assembly_problem, assembly_problem.h(0))
-    
+    sol = gs.astar_graph_search(assembly_problem, assembly_problem.h)
+    sol = gs.depth_first_graph_search(assembly_problem)
     if(sol == None):
         print("no solution")
         return "no solution"
