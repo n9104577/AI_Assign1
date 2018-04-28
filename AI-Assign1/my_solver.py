@@ -59,7 +59,7 @@ def appear_as_subpart(some_part, goal_part):
         True if 'some_part' appears in 'goal_part'
         False otherwise    
     '''
-   
+
     # turn the parts into numpy arrays
     some_array = np.array(some_part)
     goal_array = np.array(goal_part)
@@ -68,7 +68,8 @@ def appear_as_subpart(some_part, goal_part):
     #Height [0] by width [1]    
     some_size = some_array.shape
     goal_size = goal_array.shape
-    
+
+
     # make sure the goal array is valid
     if(len(goal_size) > 1):
         
@@ -77,11 +78,14 @@ def appear_as_subpart(some_part, goal_part):
         if some_size[0] <= goal_size[0] and some_size[1] <= goal_size[1]:        
             
             # iterate through the goal part array
-            for i in range(0, goal_size[0]):            
+            for i in range(0, goal_size[0]):       
+                
                 for j in range(0, goal_size[1]-1):    
-                    
+                   
                     # check if the first one or two values of the part array match the goal array
-                    if((some_size[1] == 1 and some_array[0][0] == goal_array[i][j]) or some_array[0][0] == goal_array[i][j] and some_array[0][1] == goal_array[i][j+1]):
+                    if((some_size[1] == 1 and some_array[0][0] == goal_array[i][j]) or
+                       some_array[0][0] == goal_array[i][j] and 
+                       some_array[0][1] == goal_array[i][j+1]):
                         
                         # if it does pull a slice of the goal array
                         temp = goal_array[i:i+some_size[0], j:j+some_size[1]]     
@@ -98,9 +102,10 @@ def appear_as_subpart(some_part, goal_part):
                             for k in range(0,len(rows)):                            
                                 temp.itemset((rows[k],cols[k]), 0)
                                 
-                                # check the two arrays are equal if so return true else repeat 
-                                if np.array_equal(some_array, temp):       
-                                    return True                                           
+                            # check the two arrays are equal if so return true else repeat 
+                            if np.array_equal(some_array, temp):   
+                      
+                                return True                                           
     return False
                 
                     
@@ -130,12 +135,13 @@ def cost_rotated_subpart(some_part, goal_part):
     '''
     # variable to count number of rotations
     numRotation = 0
-
+    #print('subpart' + str(some_part) + str(len(some_part)))
     # only 3 rotations for a full 
     some_part_piece = TetrisPart(some_part)
     for i in range(0,4):
         
         # check if some_part appears in goal_part
+        #print(str(some_part) + " " + str(appear_as_subpart(some_part, goal_part)))
         if(appear_as_subpart(some_part, goal_part)):
             
             # if yes return roations else rotate the part 90 degrees and check again
@@ -146,7 +152,7 @@ def cost_rotated_subpart(some_part, goal_part):
             some_part = some_part_piece.get_frozen()
             
             numRotation = numRotation + 1
-                
+         
     
     return np.inf
     
@@ -196,11 +202,12 @@ class AssemblyProblem_1(AssemblyProblem):
         part_list = list(state)
         
         # get the number of different combinations
-        options = list(itertools.permutations(part_list))
-        
+        options = list(itertools.permutations(part_list, 2))
+
         # for each combination get the part above and part under
         for opt in options:
-            
+            # I dont think this check is needed anymore but
+            # keep it here just it case
             if(len(opt) <= 1):
                 return actions
             
@@ -320,7 +327,7 @@ class AssemblyProblem_2(AssemblyProblem_1):
         
    
         # get every combo
-        options = list(itertools.permutations(part_list))
+        options = list(itertools.permutations(part_list, 2))
         for opt in options:
             if(len(opt) <= 1):
                 return actions
@@ -388,30 +395,18 @@ class AssemblyProblem_3(AssemblyProblem_1):
         
         part_list = list(state)
         
-        options = list(itertools.permutations(part_list))
+        options = list(itertools.permutations(part_list, 2))
                 
         for opt in options:
             
             if(len(opt) <= 1):
                 return actions
-            
             pa = opt[0]
-            pu = opt[1]            
-            
-            pa_rotate = TetrisPart(pa)            
-            pu_rotate = TetrisPart(pu)
-            
+            pu = opt[1] 
             range1 = offset_range(pa,pu)
-           
-            for offset in range(range1[0], range1[1]):             
-                for rotations in range(0,4):
-                    pa_rotate.rotate90()                    
-                    pa = pa_rotate.get_frozen()
-                    
-                    for rotationsPu in range(0,4):
-                        pu_rotate.rotate90()
-                        pu = pu_rotate.get_frozen()     
-                        actions.append((pa, pu, offset))  
+            actions.append((pa, None, None))
+            for offset in range(range1[0], range1[1]):     
+                actions.append((pa, pu, offset))  
 #            
                      
 
@@ -435,35 +430,22 @@ class AssemblyProblem_3(AssemblyProblem_1):
 
         The action can be a drop or rotation.        
         """
+        
         # Here a workbench state is a frozenset of parts        
  
         part_list = list(state)
-        
         # pa, pu, offset = action # HINT
         # get each variable from action
         pa, pu, offset = action
-               
-        # find the rotated piece is the state and remove it
-        piece_list = [pa, pu]        
-        for p in piece_list:
-            removed = False
-            tetris_p = TetrisPart(p)
-            for i in range(0, 4):
-                tetris_p.rotate90()
-                tetris_frozen = tetris_p.get_frozen()
-                for part in part_list:
-                    np_tetris = np.array(tetris_frozen)
-                    np_part = np.array(part)
-                    if(np.array_equal(np_tetris, np_part)):                        
-                        part_list.remove(tetris_frozen)
-                        
-                        removed = True
-                        break
-                    if(removed == True):
-                        break
-                if(removed == True):
-                    break
-   
+
+        # remove pa and pu from the part list(state) to free it up
+        part_list.remove(pa)
+        if pu != None:
+            part_list.remove(pu)            
+        else:
+            rotate_pa = TetrisPart(pa)
+            rotate_pa.rotate90()
+            pa = rotate_pa.get_frozen()
         
         # create a new tetris part out of the variables from actions
         # turn it to a tuple of tuples using .get_frozen()
@@ -472,11 +454,7 @@ class AssemblyProblem_3(AssemblyProblem_1):
         # append it back to the part_list and return it as a canonical state
         part_list.append(tuple(tetrisPart))
         state = make_state_canonical(part_list)
-        
-#        print("display state")
-#        display_state(state)
-        
-       
+        #display_state(state)
         
         return state
 
@@ -522,6 +500,7 @@ class AssemblyProblem_4(AssemblyProblem_3):
 
 
         actions = []
+        part_list = list(state)
         
         # make sure the goal state is the right format for appear_as_subpart
         goal = self.goal
@@ -537,39 +516,33 @@ class AssemblyProblem_4(AssemblyProblem_3):
             new_goal_size = new_goal.shape
             goal_size = new_goal_size
             goal_array = np.array(new_goal)
-            
-        part_list = list(state)
         
-        options = list(itertools.permutations(part_list))
-                
+        for part in part_list:            
+            tetrisPart_part = TetrisPart(part, None, None).get_frozen()
+            if(cost_rotated_subpart(tetrisPart_part, goal_array) != np.inf):
+                actions.append((part, None, None))
+   
+        # get every combo
+        options = list(itertools.permutations(part_list, 2))
         for opt in options:
-            
             if(len(opt) <= 1):
                 return actions
             
             pa = opt[0]
-            pu = opt[1]            
+            pu = opt[1]
+          
             
-            pa_rotate = TetrisPart(pa)            
-            pu_rotate = TetrisPart(pu)
-            
+            # get the range of offset for the two parts
             range1 = offset_range(pa,pu)
-           
-            for offset in range(range1[0], range1[1]):             
-                for rotations in range(0,4):
-                    pa_rotate.rotate90()                    
-                    pa = pa_rotate.get_frozen()
-                    
-                    for rotationsPu in range(0,4):
-                        pu_rotate.rotate90()
-                        pu = pu_rotate.get_frozen()   
-                        
-                        tetrisPart = TetrisPart(pa, pu, offset).get_frozen()
-                        if(cost_rotated_subpart(tetrisPart, goal_array) != np.inf):
-                              actions.append((pa, pu, offset))
+            for offset in range(range1[0], range1[1]):
+                
+                # create a tetris part and check it appears in the goal_array
+                # if it does append it to the actions list else skip it
+                tetrisPart = TetrisPart(pa, pu, offset).get_frozen()
+                if(appear_as_subpart(tetrisPart, goal_array)):
+                    actions.append((pa, pu, offset))       
 
-        
-
+#        print("actions")
 #        print(np.array(actions))
 #        print()
         return list(actions)
@@ -593,21 +566,19 @@ class AssemblyProblem_4(AssemblyProblem_3):
           n : node of a search tree
           
         '''
+        rotations = list()
         k_n = 0
-        k_g = 0
-        maxRot = 0
-       
-        for part in self.goal:
-            k_g += 1
+        k_g = len(self.goal)
+     
+      
         for part in n.state:            
-            maxRot += cost_rotated_subpart(part,self.goal[0])
+            
+            rotations.append(cost_rotated_subpart(part, self.goal[0]))
             k_n += 1
             
-            
-        for part in self.goal:
-            k_g += 1
+    
        
-        return k_n - k_g + maxRot
+        return k_n - k_g + max(rotations)
         
 
 # ---------------------------------------------------------------------------
