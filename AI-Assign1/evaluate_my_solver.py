@@ -169,12 +169,14 @@ def test_solve_3a():
 
     goal_state = load_state('workbenches/wb_06_g.txt')        
     display_state(goal_state,'\nGoal state')
+    
+    t0 = time.time()
     La = solve_3(initial_state, goal_state)
-#    ok_2 = La=='no solution'
-#    
-#    test_passed = ok_1 and ok_2
-#    
-#    return test_passed
+    t1 = time.time()
+    test_passed = (
+            La == [(((0,0,1),(1,1,1)),((1,0,0)),0)])
+    print ('Search solve_3 took {0} seconds'.format(t1-t0))
+    return test_passed
 # ---------------------------------------------------------------------------
 
 def test_solve_3b():
@@ -334,8 +336,43 @@ def test_solve_2a():
     
     print ('Search solve_2 took {0} seconds'.format(t1-t0))
     
+#-----------------------------------
 
-       
+def test_time():
+    '''
+
+    Run all solves on  
+        initial_state : 'workbenches/wb_09_i.txt'
+        goal_state : 'workbenches/wb_09_g1.txt'
+    
+ 
+    Computation takes about a tenth of a second on my aging PC
+   
+    '''
+    initial_state = load_state('workbenches/wb_09_i.txt')    
+
+    goal_state  = load_state('workbenches/wb_09_g1.txt')
+    
+    t0 = time.time()
+    La = solve_1(initial_state, goal_state)
+    t1 = time.time()
+    print ('Search solve_1 took {0} seconds'.format(t1-t0))   
+    
+    t0 = time.time()
+    La = solve_2(initial_state, goal_state)
+    t1 = time.time()
+    print ('Search solve_2 took {0} seconds'.format(t1-t0))   
+
+    #t0 = time.time()
+    #La = solve_3(initial_state, goal_state)
+    #t1 = time.time()
+    #print ('Search solve_2 took {0} seconds'.format(t1-t0))   
+    
+    t0 = time.time()
+    La = solve_4(initial_state, goal_state)
+    t1 = time.time()
+    print ('Search solve_2 took {0} seconds'.format(t1-t0))   
+        
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
     print(
@@ -351,11 +388,11 @@ then it will not pass the test functions the markers will use.
 
 #    print('"test_appear_as_subpart" has been passed ', test_appear_as_subpart() )
     
-    print('\n"test_solve_1" has been passed ', test_solve_1() )
+#    print('\n"test_solve_1" has been passed ', test_solve_1() )
 
 #    print('\n"test_solve_2" has been passed ', test_solve_2() )
 
-#    print('\ntest_solve_3a has been passed ', test_solve_3a() )
+    print('\ntest_solve_3a has been passed ', test_solve_3a() )
 
 #    print('\ntest_solve_3b has been passed ', test_solve_3b() )
 
@@ -369,6 +406,10 @@ then it will not pass the test functions the markers will use.
 #    test_solve_1a()
     
 #    test_solve_rand_1()
+
+
 #    test_solve_2a()
 #    test_solve_rand_2()
+ 
     
+#    test_time()
