@@ -30,10 +30,10 @@ def print_the_team():
     (full name + student number)
     '''
     
-    raise NotImplementedError
 
-#    print('Jake Carmock, N9104577')
-#    print('Kallum Strachan, N9703748')
+
+    print('Jake Carmock, N9104577')
+    print('Kallum Strachan, N9703748')
 
     
 # ---------------------------------------------------------------------------
@@ -225,7 +225,7 @@ class AssemblyProblem_1(AssemblyProblem):
 
 #        print("actions")
 #        print(np.array(actions))
-        #print()
+
         return list(actions)
 
 
@@ -346,9 +346,7 @@ class AssemblyProblem_2(AssemblyProblem_1):
                 if(appear_as_subpart(tetrisPart, goal_array)):
                     actions.append((pa, pu, offset))       
 
-#        print("actions")
-#        print(np.array(actions))
-#        print()
+
         return list(actions)
 
 
@@ -396,28 +394,25 @@ class AssemblyProblem_3(AssemblyProblem_1):
         
         part_list = list(state)
         
+        
+        # for every part add it to the actions list by itself to be rotated
+        for part in part_list:            
+            actions.append((part, None, None))
+        
+        # get a list of every combination
         options = list(itertools.permutations(part_list, 2))
-                
-        for opt in options:
-            
+        
+        # for every option add it to the list of actions
+        # along with every offset
+        for opt in options:            
             if(len(opt) <= 1):
                 return actions
             pa = opt[0]
             pu = opt[1] 
-            range1 = offset_range(pa,pu)
-            actions.append((pa, None, None))
+            range1 = offset_range(pa,pu)            
             for offset in range(range1[0], range1[1]):     
                 actions.append((pa, pu, offset))  
-#            
-                     
 
-#        print("actions")
-#        actions.append((pa, None, None))
-        
-        
-
-#        print(np.array(actions))
-#        print()
         return list(actions)
 
         
@@ -499,7 +494,7 @@ class AssemblyProblem_4(AssemblyProblem_3):
                 
         """
 
-
+        # set up empty array 
         actions = []
         part_list = list(state)
         
@@ -518,20 +513,20 @@ class AssemblyProblem_4(AssemblyProblem_3):
             goal_size = new_goal_size
             goal_array = np.array(new_goal)
         
+        # for every part check if it can be rotated to fit the goal state
+        # if so add it to the actions list by itself to be rotated
         for part in part_list:            
             tetrisPart_part = TetrisPart(part, None, None).get_frozen()
             if(cost_rotated_subpart(tetrisPart_part, goal_array) != np.inf):
                 actions.append((part, None, None))
    
-        # get every combo
+        # get every combo and add it to the list of actions
         options = list(itertools.permutations(part_list, 2))
         for opt in options:
             if(len(opt) <= 1):
-                return actions
-            
+                return actions            
             pa = opt[0]
-            pu = opt[1]
-          
+            pu = opt[1]          
             
             # get the range of offset for the two parts
             range1 = offset_range(pa,pu)
@@ -543,9 +538,7 @@ class AssemblyProblem_4(AssemblyProblem_3):
                 if(appear_as_subpart(tetrisPart, goal_array)):
                     actions.append((pa, pu, offset))       
 
-#        print("actions")
-#        print(np.array(actions))
-#        print()
+
         return list(actions)
         
         
@@ -567,18 +560,18 @@ class AssemblyProblem_4(AssemblyProblem_3):
           n : node of a search tree
           
         '''
+        # create a list and assign variables
         rotations = list()
         k_n = 0
         k_g = len(self.goal)
      
-      
-        for part in n.state:            
-            
+       # get the rotations for every part
+        for part in n.state: 
             rotations.append(cost_rotated_subpart(part, self.goal[0]))
             k_n += 1
             
     
-       
+       # return k_n - k_g + the highest rotation
         return k_n - k_g + max(rotations)
         
 
@@ -605,12 +598,11 @@ def solve_1(initial, goal):
     sol = gs.depth_first_graph_search(assembly_problem)
   
     if(sol == None):
-        print("no solution")
+#        print("no solution")
         return "no solution"
-    else:
-       
-        print("solution")
-        print(sol.solution()) 
+    else:       
+#        print("solution")
+#        print(sol.solution()) 
         return sol.solution()
 
 # ---------------------------------------------------------------------------
@@ -634,12 +626,13 @@ def solve_2(initial, goal):
     assembly_problem = AssemblyProblem_2(initial, goal) # HINT
     sol = gs.depth_first_graph_search(assembly_problem)
   
+
     if(sol == None):
-        print("no solution")
+#        print("no solution")
         return "no solution"
-    else:
-        print("solution")
-        print(sol.solution()) 
+    else:       
+#        print("solution")
+#        print(sol.solution()) 
         return sol.solution()
     
 
@@ -659,19 +652,19 @@ def solve_3(initial, goal):
         'initial' to state 'goal'
     
     '''
-    part_list = []
+
     print('\n++  busy searching in solve_3() ...  ++\n')
     assembly_problem = AssemblyProblem_3(initial, goal) # HINT
     
     sol = gs.depth_first_graph_search(assembly_problem)
     
     if(sol == None):
-        print("no solution")
+#        print("no solution")
         return "no solution"
     else:
        
-        print("solution")
-        print(sol.solution()) 
+#        print("solution")
+#        print(sol.solution()) 
         return sol.solution()
     
 # ---------------------------------------------------------------------------
@@ -695,13 +688,14 @@ def solve_4(initial, goal):
     print('\n++  busy searching in solve_4() ...  ++\n')
     assembly_problem = AssemblyProblem_4(initial, goal) # HINT
     sol = gs.astar_graph_search(assembly_problem, assembly_problem.h)
-    #sol = gs.breadth_first_graph_search(assembly_problem)
+
+
     if(sol == None):
-        print("no solution")
+#        print("no solution")
         return "no solution"
-    else:
-        print("solution")
-        print(sol.solution()) 
+    else:       
+#        print("solution")
+#        print(sol.solution()) 
         return sol.solution()
 # ---------------------------------------------------------------------------
 
