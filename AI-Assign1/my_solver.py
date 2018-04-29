@@ -9,6 +9,7 @@ Scaffholding code for CAB320 Assignment One
 This is the only file that you have to modify and submit for the assignment.
 
 """
+import time
 
 import numpy as np
 
@@ -31,8 +32,8 @@ def print_the_team():
     
     raise NotImplementedError
 
-#    print('Jake Carmock, 12340001')
-#    print('Kallum Strachan, 9703748')
+#    print('Jake Carmock, N9104577')
+#    print('Kallum Strachan, N9703748')
 
     
 # ---------------------------------------------------------------------------
@@ -608,7 +609,7 @@ def solve_1(initial, goal):
         return "no solution"
     else:
        
-        print("solutino")
+        print("solution")
         print(sol.solution()) 
         return sol.solution()
 
@@ -694,7 +695,7 @@ def solve_4(initial, goal):
     print('\n++  busy searching in solve_4() ...  ++\n')
     assembly_problem = AssemblyProblem_4(initial, goal) # HINT
     sol = gs.astar_graph_search(assembly_problem, assembly_problem.h)
-    sol = gs.depth_first_graph_search(assembly_problem)
+    #sol = gs.breadth_first_graph_search(assembly_problem)
     if(sol == None):
         print("no solution")
         return "no solution"
